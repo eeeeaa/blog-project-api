@@ -43,6 +43,7 @@ exports.login_post = [
   }),
 ];
 
+//for normal signup of user
 exports.signup_post = [
   body("username")
     .trim()
