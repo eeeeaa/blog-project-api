@@ -1,20 +1,14 @@
 const createError = require("http-errors");
 const express = require("express");
-const session = require("express-session");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-const MongoStore = require("connect-mongo");
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcryptjs");
 const cors = require("cors");
 
 const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth");
 const postsRouter = require("./routes/posts");
 const usersRouter = require("./routes/users");
-
-const User = require("./models/user");
 
 const compression = require("compression");
 const helmet = require("helmet");
@@ -62,57 +56,11 @@ app.use(
   })
 );
 
-//setup session
-app.use(
-  session({
-    store: MongoStore.create({
-      mongoUrl: connectionString,
-      collectionName: "sessions",
-    }),
-    secret: process.env.SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, //expire in one day
-    },
-  })
-);
-app.use(passport.session());
-
-//setup passport
-passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    try {
-      const user = await User.findOne({ username: username });
-      if (!user) {
-        return done(null, false, { message: "Incorrect username" });
-      }
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
-        // passwords do not match!
-        return done(null, false, { message: "Incorrect password" });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  })
-);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
+//setup passport jwt
+require("./utils/passport");
 
 app.use("/", indexRouter);
+app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/posts", postsRouter);
 
@@ -127,8 +75,8 @@ app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  // render the error page
-  res.sendStatus(err.status || 500);
+  // send error information
+  res.status(err.status || 500).json({ message: err.message });
 });
 
 module.exports = app;

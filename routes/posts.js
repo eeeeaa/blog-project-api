@@ -8,6 +8,7 @@ const comment_controller = require("../controllers/commentController");
 router.get("/", post_controller.posts_get);
 router.post("/", post_controller.posts_post);
 
+router.get("/:postId", post_controller.posts_get_one);
 router.put("/:postId", post_controller.posts_put);
 router.delete("/:postId", post_controller.posts_delete);
 
@@ -15,6 +16,7 @@ router.delete("/:postId", post_controller.posts_delete);
 router.get("/:postId/comments", comment_controller.comments_get);
 router.post("/:postId/comments", comment_controller.comments_post);
 
+router.get("/:postId/comments/:commentId", comment_controller.comments_get_one);
 router.put("/:postId/comments/:commentId", comment_controller.comments_put);
 router.delete(
   "/:postId/comments/:commentId",
