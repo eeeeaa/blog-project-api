@@ -8,8 +8,10 @@ const MongoStore = require("connect-mongo");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
+const cors = require("cors");
 
 const indexRouter = require("./routes/index");
+const postsRouter = require("./routes/posts");
 const usersRouter = require("./routes/users");
 
 const User = require("./models/user");
@@ -18,6 +20,8 @@ const compression = require("compression");
 const helmet = require("helmet");
 
 const app = express();
+
+app.use(cors());
 
 // Set up rate limiter: maximum of twenty requests per minute
 const RateLimit = require("express-rate-limit");
@@ -110,6 +114,7 @@ passport.deserializeUser(async (id, done) => {
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/posts", postsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
