@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const PostSchema = new Schema({
   post_title: { type: String, required: true },
   post_content: { type: String },
-  created_at: { type: Date, default: Date.now() },
-  updated_at: { type: Date, default: Date.now() },
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
   post_status: {
     type: String,
     required: true,

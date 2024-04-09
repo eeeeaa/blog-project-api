@@ -1,7 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const passport = require("passport");
 const { body } = require("express-validator");
-const { validationErrorHandler } = require("../handler/validationErrorHandler");
+const {
+  validationErrorHandler,
+  validUserIdErrorHandler,
+} = require("../handler/validationErrorHandler");
 const { getHash } = require("../utils/passwordUtils");
 
 const User = require("../models/user");
@@ -9,7 +12,10 @@ const User = require("../models/user");
 exports.users_get = [
   passport.authenticate("jwt", { session: false }),
   asyncHandler(async (req, res, next) => {
-    const allUsers = await User.find().sort({ username: 1 }).exec();
+    const allUsers = await User.find()
+      .sort({ username: 1 })
+      .limit(req.query.limit)
+      .exec();
     res.json({
       users: allUsers,
     });
@@ -18,8 +24,14 @@ exports.users_get = [
 
 exports.users_get_one = [
   passport.authenticate("jwt", { session: false }),
+  validUserIdErrorHandler,
   asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.params.userId).exec();
+    if (user === null) {
+      const err = new Error("user not found");
+      err.status = 404;
+      return next(err);
+    }
     res.json({
       user: user,
     });
@@ -74,11 +86,12 @@ exports.users_put = [
     .withMessage("password must not be empty")
     .escape(),
   validationErrorHandler,
+  validUserIdErrorHandler,
   asyncHandler(async (req, res, next) => {
     const hash = await getHash(req.body.password);
     const existUser = await User.findById(req.params.userId);
 
-    if (!existUser) {
+    if (existUser === null) {
       const err = new Error("User does not exist, can't update");
       err.status = 404;
       return next(err);
@@ -100,14 +113,17 @@ exports.users_put = [
 
 exports.users_delete = [
   passport.authenticate("jwt", { session: false }),
+  validUserIdErrorHandler,
   asyncHandler(async (req, res, next) => {
-    try {
-      const deletedUser = await User.findByIdAndDelete(req.params.userId);
-      res.json({
-        deletedUser,
-      });
-    } catch (err) {
-      next(err);
+    const existUser = await User.findById(req.params.userId).exec();
+    if (existUser === null) {
+      const err = new Error("User does not exist, can't delete");
+      err.status = 404;
+      return next(err);
     }
+    const deletedUser = await User.findByIdAndDelete(req.params.userId);
+    res.json({
+      deletedUser,
+    });
   }),
 ];
