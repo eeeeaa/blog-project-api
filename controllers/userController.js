@@ -101,9 +101,13 @@ exports.users_put = [
 exports.users_delete = [
   passport.authenticate("jwt", { session: false }),
   asyncHandler(async (req, res, next) => {
-    res.json({
-      message: "not implemented: delete user",
-      userId: req.params.userId,
-    });
+    try {
+      const deletedUser = await User.findByIdAndDelete(req.params.userId);
+      res.json({
+        deletedUser,
+      });
+    } catch (err) {
+      next(err);
+    }
   }),
 ];
