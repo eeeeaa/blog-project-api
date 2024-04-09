@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const passport = require("passport");
-const mongoose = require("mongoose");
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 const {
   validationErrorHandler,
   validPostIdErrorHandler,
