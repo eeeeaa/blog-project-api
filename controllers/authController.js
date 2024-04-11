@@ -37,7 +37,7 @@ exports.login_post = [
         const token = jwt.sign({ user }, process.env.SECRET, {
           expiresIn: "3h",
         });
-        return res.json({ token });
+        return res.json({ username: user.username, token });
       });
     })(req, res);
   }),
