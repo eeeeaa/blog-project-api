@@ -1,6 +1,14 @@
 # Blog project API
 
+- [Live demo](https://blog-project-api.glitch.me)
+
 This is an Express api for my blog project following The Odin Project.
+
+# Stack used
+
+- nodeJS + expressJS
+- React vite
+- MongoDB
 
 ## User Client
 
