@@ -7,6 +7,7 @@ const {
 const { body } = require("express-validator");
 
 const Post = require("../models/post");
+const Comment = require("../models/comment");
 
 exports.posts_get = asyncHandler(async (req, res, next) => {
   const allPosts = await Post.find()
@@ -118,9 +119,14 @@ exports.posts_delete = [
       err.status = 404;
       return next(err);
     }
-    const deletedPost = await Post.findByIdAndDelete(req.params.postId);
+    //delete all post's comments
+    const [deletedPost, comments] = await Promise.all([
+      Post.findByIdAndDelete(req.params.postId),
+      Comment.deleteMany({ post: req.params.postId }).exec(),
+    ]);
     res.json({
-      deletedPost,
+      deletedPost: deletedPost,
+      commentDeleteCount: comments.deletedCount,
     });
   }),
 ];
